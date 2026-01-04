@@ -1,9 +1,12 @@
-﻿namespace FileManager.Api.Services;
+﻿using FileManager.Api.Contracts;
+
+namespace FileManager.Api.Services;
 
 
 public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbContext context) : IFileService
 {
     private readonly string _filesPath = $"{webHostEnvironment.WebRootPath}/uploads";
+    private readonly string _imagesPath = $"{webHostEnvironment.WebRootPath}/images";
     private readonly ApplicationDbContext _context = context;
 
     public async Task<Guid> UploadAsync(IFormFile file, CancellationToken cancellationtoken = default)
@@ -16,6 +19,8 @@ public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbC
 
         return uploadedFile.Id;
     }
+
+    
 
     public async Task<IEnumerable<Guid>> UploadManyAsync(IFormFileCollection files, CancellationToken cancellationToken = default)
     {
@@ -30,6 +35,14 @@ public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbC
         await _context.SaveChangesAsync(cancellationToken);
 
         return uploadedFiles.Select(x=>x.Id).ToList();
+    }
+
+    public async Task UploadImageAsync(IFormFile image, CancellationToken cancellationToken = default)
+    {
+        var path = Path.Combine(_imagesPath,image.FileName);
+
+        using var stream = File.Create(path);
+        await image.CopyToAsync(stream, cancellationToken);
     }
 
     private async Task<UploadedFile> SaveFile(IFormFile file, CancellationToken cancellationToken = default) 

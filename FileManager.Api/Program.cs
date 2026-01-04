@@ -36,4 +36,9 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+//app.UseStaticFiles();
+
+// Enable serving static files from the "wwwroot" folder
+app.MapStaticAssets();
+
 app.Run();
