@@ -1,9 +1,5 @@
-﻿
+﻿namespace FileManager.Api.Services;
 
-using FileManager.Api.Entities;
-using System.Threading;
-
-namespace FileManager.Api.Services;
 
 public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbContext context) : IFileService
 {
@@ -12,10 +8,11 @@ public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbC
 
     public async Task<Guid> UploadAsync(IFormFile file, CancellationToken cancellationtoken = default)
     {
-       var uploadedFile = await SaveFile(file, cancellationtoken);
+    
+        var uploadedFile = await SaveFile(file, cancellationtoken);
 
         await _context.Files.AddAsync(uploadedFile, cancellationtoken);
-        await  _context.SaveChangesAsync( cancellationtoken);
+        await _context.SaveChangesAsync(cancellationtoken);
 
         return uploadedFile.Id;
     }
@@ -37,6 +34,8 @@ public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbC
 
     private async Task<UploadedFile> SaveFile(IFormFile file, CancellationToken cancellationToken = default) 
     {
+       
+
         var randomFileName = Path.GetRandomFileName();
 
         var uploadedFile = new UploadedFile
