@@ -1,4 +1,6 @@
 ﻿using FileManager.Api.Contracts;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace FileManager.Api.Services;
 
@@ -45,6 +47,37 @@ public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbC
         await image.CopyToAsync(stream, cancellationToken);
     }
 
+    public async Task<(byte[] fileContent, string contentType, string fileName)> DownloadAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        // Find the file metadata in the database
+        var file = await  _context.Files.FindAsync(id , cancellationToken);
+         if (file is null)
+              return ([],string.Empty,string.Empty);
+        // Build the full file path
+        var path = Path.Combine(_filesPath, file.StoredFileName);
+
+        // Read the file content
+        MemoryStream memoryStream = new();
+        // Copy the file content to the memory stream
+        using FileStream fileStream = new(path, FileMode.Open);
+        fileStream.CopyTo(memoryStream);
+        
+        memoryStream.Position = 0;
+        return (memoryStream.ToArray(), file.ContentType, file.FileName);
+    }
+
+    public async Task<(FileStream? stream, string contentType, string fileName)> StreamAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var file = await _context.Files.FindAsync(id, cancellationToken);
+        if (file is null)
+            return (null, string.Empty, string.Empty);
+
+        var path = Path.Combine(_filesPath, file.StoredFileName);
+
+        var  fileStream = File.OpenRead(path);
+
+        return (fileStream, file.ContentType, file.FileName);
+    }
     private async Task<UploadedFile> SaveFile(IFormFile file, CancellationToken cancellationToken = default) 
     {
        
@@ -66,4 +99,6 @@ public class FileService(IWebHostEnvironment webHostEnvironment , ApplicationDbC
 
         return uploadedFile;
     }
+
+    
 }

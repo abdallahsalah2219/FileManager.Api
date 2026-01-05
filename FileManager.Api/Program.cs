@@ -36,8 +36,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+//  Before .Net 9.0 way of enabling static files
 //app.UseStaticFiles();
 
+// .NET 9.0 way of enabling static files
 // Enable serving static files from the "wwwroot" folder
 app.MapStaticAssets();
 
